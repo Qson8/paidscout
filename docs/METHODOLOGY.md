@@ -1,6 +1,11 @@
 # Methodology — how the big platforms do it, and what PaidScout replicates
 
-## How Qimai / Sensor Tower / data.ai actually work
+*Positioning note: all data comes from Apple's public feeds and remains the
+property of its respective owners; app and seller names are used only to
+identify the apps themselves. PaidScout outputs factual signals (ranks,
+rating counts, prices, versions) for personal research.*
+
+## How Qimai / Sensor Tower actually work
 
 Every app-intelligence platform is built on the same public foundation. The
 differences are in the estimation layer on top:
@@ -14,9 +19,10 @@ differences are in the estimation layer on top:
    ranks 501–1500 on its site are model estimates. Its "downloads yesterday"
    and revenue figures are model outputs, not Apple data.
 3. **Download/revenue estimation = rank curves × calibration panels.**
-   Sensor Tower runs a 10M+ opt-in consumer panel plus publisher first-party
-   data to calibrate "rank → downloads" curves, then extrapolates. Industry
-   consensus: decent near the top of the charts, noisy in the long tail, and
+   Sensor Tower runs a large opt-in consumer panel (described in its own
+   materials as 10M+) plus publisher first-party data to calibrate
+   "rank → downloads" curves, then extrapolates. By most public accounts the
+   results are decent near the top of the charts, noisy in the long tail, and
    two platforms routinely print different numbers for the same app.
 4. **Keyword intelligence** comes from repeatedly querying store search and
    recording positions/coverage (the ASO business).
@@ -32,23 +38,27 @@ differences are in the estimation layer on top:
 | Keyword positions | ✔ | ✔ for a watchlist (Search API, approximate) |
 | Review velocity | ✔ | △ page-1 probe for watchlist apps — Apple's reviews feed intermittently returns empty for some apps/storefronts; failures are stored as NULL (never as zero) and page-1 counts saturate at 50, so treat this as a weak signal |
 | Download estimates | model + panel | ✘ — reports velocity proxies instead |
-| Revenue estimates | model + panel | ✘ — long-tail revenue models are demonstrably broken (see below) |
+| Revenue estimates | model + panel | ✘ — long-tail revenue estimates can be far off (see field check) |
 
-Field check (2026-11-07, China paid chart): Qimai's top 25 matched PaidScout's
-legacy-feed chart **position for position**, and its detail page showed a
-plausible download estimate for a ¥3 countdown app (263 downloads yesterday,
-≈233/day over 30 days) — while its revenue estimate for the same app showed
-**$0 across every window**, which is arithmetically impossible for a paid app
-selling ~260 copies a day. That is exactly why PaidScout treats third-party
-estimates as a cross-reference, never as ground truth.
+Field check (2026-11-07, China paid chart, free account): Qimai's top 25
+matched PaidScout's legacy-feed chart **position for position**, and its
+detail page showed a plausible download estimate for a ¥3 countdown app
+(263 downloads yesterday on iPhone, plus 19 on iPad; ≈233/day over 30 days) —
+while its revenue estimate for the same app showed **$0 across every
+window**. The two figures cannot both be right; on this app, at that moment,
+the revenue layer was not usable (a free-tier display scope or data lag
+cannot be ruled out from outside). That is exactly why PaidScout treats
+third-party estimates as a cross-reference, never as ground truth.
 
 ## Reading the signals
 
 - **Rank high + rating count tiny** = a new entry riding external buzz or a
   chart artifact. Tomorrow's rating delta separates the two.
-- **Rating delta** is the honest velocity proxy available without a panel:
-  it undercounts (not everyone rates), but its *changes* are comparable
-  across days and apps.
+- **Rating delta** is a comparatively honest velocity proxy available
+  without a panel: it undercounts (not everyone rates), and its *changes*
+  are comparable across days **for the same app**; across apps and
+  categories they are indicative only, because rating-prompt intensity
+  differs.
 - **Keyword position vs chart position** reveals the acquisition model:
   charting high while ranking #43 for your own core keyword means traffic
   comes from outside the store (press, creator IP, ads), not from search.

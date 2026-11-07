@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.1 — 2026-11-07
+
+Compliance pass (four-role review of the product and its promotion copy,
+mean score 6.75/10; fixes target its findings):
+
+- **Engine pacing**: keyword Search API calls are now spaced ≥3s apart
+  (Apple's published guidance is ~20 calls/minute); HTTP 429 responses honour
+  `Retry-After` with a longer backoff instead of the generic retry. The
+  User-Agent is now a plain `PaidScout/<version> (+repo URL)` instead of a
+  Mozilla-prefixed string.
+- **Docs honesty pass**: competitor claims scoped to the single documented
+  case (no whole-market generalisations from n=1), time-state wording rolled
+  back to what is true on day one, the sample report replaced with a genuine
+  v0.2 run (failed probes shown as failures, not zeros), rating-delta
+  comparability qualified (same app across days; cross-app indicative only),
+  Sensor Tower panel size attributed to its own materials, and assorted
+  wording alignments across README (EN/ZH), METHODOLOGY and the launch post.
+
 ## 0.2.0 — 2026-11-07
 
 Post-review hardening (six-role review scored v0.1.0 at 5.4/10; fixes target
@@ -31,7 +49,7 @@ its P0 findings):
 
 ## 0.1.0 — 2026-11-07
 
-- First release, extracted from a private daily research workflow.
+- First release, built for a daily research workflow.
 - Dual-source chart crawling (Apple legacy RSS + MarketingTools RSS), US & CN,
   overall + 6 genre paid charts, top-grossing for coverage.
 - SQLite history with per-run diff: rank movement, new entries, rating-count

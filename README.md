@@ -6,23 +6,23 @@
 
 **App Store paid & offline app research engine for indie developers.**
 
-PaidScout watches the App Store paid charts every day and turns them into
-research an indie developer can act on: which paid, offline, single-device
-apps are actually moving, which new entries are real, and where a one-person
-team could still build something people pay for.
+PaidScout is built to watch the App Store paid charts daily and turn them
+into research an indie developer can act on: which paid, offline,
+single-device apps are actually moving, which new entries are real, and
+where a one-person team could still build something people pay for.
 
-It replicates the replicable core of what Qimai / Sensor Tower / data.ai do —
+It covers the chart-monitoring layer of what Qimai / Sensor Tower do —
 scheduled chart crawling, rank history, rating-velocity tracking, keyword
 positions — using **only Apple's official free feeds. No API key, no
 subscription, no scraped login-walled data.**
 
 > **Honesty first:** PaidScout never prints download or revenue "estimates".
 > Those numbers at big platforms are panel-calibrated models — directional at
-> the top of the charts, demonstrably broken in the long tail (we caught a
-> major platform showing $0 revenue for an app selling ~260 copies/day).
-> PaidScout reports the verifiable signals themselves: rank, rank movement,
-> rating-count delta, price, version cadence, keyword positions.
-> See [docs/METHODOLOGY.md](docs/METHODOLOGY.md).
+> the top of the charts, unreliable in the long tail (in one check on
+> 2026-11-07, a major platform showed $0 revenue for an app with ~280
+> estimated downloads that day). PaidScout reports the verifiable signals
+> themselves: rank, rank movement, rating-count delta, price, version
+> cadence, keyword positions. See [docs/METHODOLOGY.md](docs/METHODOLOGY.md).
 
 ## Features
 
@@ -32,8 +32,8 @@ subscription, no scraped login-walled data.**
   official feeds often disagree (top-50 overlap was ~36% on 2026-11-07);
   PaidScout stores them separately and flags it instead of merging ranks.
 - **History & diffs** — everything lands in SQLite. Every run after the first
-  reports rank changes, new entries, **rating-count deltas** (the honest
-  download-velocity proxy), price and version changes.
+  reports rank changes, new entries, **rating-count deltas** (a comparatively
+  honest download-velocity proxy), price and version changes.
 - **Watchlist tracking** — keyword search positions and recent-review velocity
   for the apps you care about (your candidates — and your own app).
 - **First-pass filters** — offline/single-device heuristics from store copy,
@@ -46,7 +46,7 @@ subscription, no scraped login-walled data.**
 ```bash
 git clone https://github.com/Qson8/paidscout.git
 cd paidscout
-python3 paidscout.py            # full run, ~90 seconds
+python3 paidscout.py            # full run, ~1–2 minutes
 python3 paidscout.py --quick    # overall charts only, faster
 ```
 
@@ -71,9 +71,11 @@ keyword.
 ## Sample output
 
 [examples/sample-report-2026-11-07.md](examples/sample-report-2026-11-07.md)
-is a real first run: US & CN paid top-50s, cross-source disagreement flags,
-keyword hits (e.g. a chart-topping camera app that ranks only #43 for its own
-core keyword — external buzz, not store search), and watchlist review probes.
+is a real run from the first day (2026-11-07, engine v0.2): US & CN paid
+top-50s, cross-source disagreement flags, keyword hits (e.g. a camera app
+that hit #3 on the US paid chart yet ranks only #43 for its own core
+keyword — external buzz, not store search), and watchlist review probes
+(failed probes are shown as "probe failed", never as fake zeros).
 
 ## Use it with an AI agent (Skill)
 
@@ -103,4 +105,6 @@ PaidScout is the data layer. The workflow it was built for:
 
 MIT. Built by an indie developer, for indie developers.
 Data is fetched from Apple's public feeds; respect their terms and rate
-limits (the engine batches lookups and sleeps between calls).
+limits (the engine batches lookups 80 at a time and spaces its keyword and
+review calls; Apple's Search API guidance is ~20 calls/minute and the
+default configuration stays within it).

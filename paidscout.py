@@ -26,7 +26,7 @@ current working directory).
 import argparse, json, os, sqlite3, sys, time, urllib.parse, urllib.request
 from datetime import date as date_cls
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 
 DEFAULT_CONFIG = {
     "countries": ["us", "cn"],
@@ -76,9 +76,19 @@ FAILURES = []
 def fetch_json(url, retries=3, timeout=25):
     for attempt in range(retries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (PaidScout/" + VERSION + ")"})
+            req = urllib.request.Request(url, headers={"User-Agent": "PaidScout/" + VERSION + " (+https://github.com/Qson8/paidscout)"})
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 return json.loads(r.read().decode("utf-8", "replace"))
+        except urllib.error.HTTPError as e:
+            if attempt == retries - 1:
+                FAILURES.append(f"{url[:110]} -> {e}")
+                return None
+            if e.code == 429:
+                # Rate-limited: honour Retry-After, back off much longer.
+                wait = e.headers.get("Retry-After") if e.headers else None
+                time.sleep(float(wait) if wait and str(wait).isdigit() else 20 * (attempt + 1))
+            else:
+                time.sleep(2 * (attempt + 1) + 1)
         except Exception as e:
             if attempt == retries - 1:
                 FAILURES.append(f"{url[:110]} -> {e}")
@@ -276,7 +286,9 @@ def main():
                                      (today, cc, kw, aid, i))
                         if (aid, cc) in watch_pairs:
                             kw_hits.append(f"{cc} '{kw}': {r.get('trackName')} at #{i}")
-                time.sleep(0.4)
+                # Apple's published guidance for the Search API is ~20
+                # calls/minute — stay safely under it.
+                time.sleep(3.2)
         for app_id, cc, label in watchlist:
             url = f"https://itunes.apple.com/{cc}/rss/customerreviews/id={app_id}/sortBy=mostRecent/json"
             data = fetch_json(url, retries=3)
