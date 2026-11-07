@@ -64,6 +64,7 @@ DEFAULT_CONFIG = {
         ["1439723850", "cn", "时间规划局"],
         ["1164801111", "cn", "AutoSleep"],
         ["1578203914", "cn", "电子宠物机"],
+        ["6743614900", "cn", "像素蛋糕 PixCake"],
     ],
     "keywords": {
         "us": ["film camera", "meditation", "sleep tracker", "flashcards",
