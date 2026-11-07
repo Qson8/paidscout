@@ -44,6 +44,10 @@ python3 paidscout.py --config config.json
 
 [examples/sample-report-2026-11-07.md](examples/sample-report-2026-11-07.md) 是第一次真实运行的报告：美区＋中国区付费榜前 50、双源分歧标注、关键词命中（一款登顶付费榜的相机应用，搜自己的核心关键词却只排第 43 名——说明流量来自站外，不是商店搜索）、观察名单的评论探针。
 
+## 配 AI Agent 用（Skill 版）
+
+仓库自带可安装的 Agent Skill：[`skill/SKILL.md`](skill/SKILL.md)。把它装给你的 Agent（Muse、Claude Code 或其他兼容 SKILL.md 的运行时），Agent 就能替你跑完整条工作流：每天执行引擎、复核初筛标签、按五轴给方向打分、维护候选池——同样守「不编造下载/收入数字」的口径。
+
 ## 调研工作流怎么用
 
 PaidScout 是数据层。它服务的完整工作流是：

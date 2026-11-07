@@ -73,6 +73,14 @@ is a real first run: US & CN paid top-50s, cross-source disagreement flags,
 keyword hits (e.g. a chart-topping camera app that ranks only #43 for its own
 core keyword — external buzz, not store search), and watchlist review probes.
 
+## Use it with an AI agent (Skill)
+
+This repo ships an installable agent skill in [`skill/SKILL.md`](skill/SKILL.md).
+Give it to your agent (Muse, Claude Code, or any SKILL.md-compatible
+runtime) and the agent can run the whole workflow for you: execute the engine
+daily, review its heuristics, score directions on the 5 axes, and maintain
+your candidate pool — under the same no-fabricated-estimates rule.
+
 ## How a research workflow uses it
 
 PaidScout is the data layer. The workflow it was built for:
