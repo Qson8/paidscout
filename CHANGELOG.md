@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.2.3 — 2026-11-07
+
+Fixes from the second-round review (six reviewers; two findings reproduced
+independently by two reviewers each):
+
+- **GitHub Actions template repaired (was broken as shipped).** The commit
+  step ran `git add data reports`, but the repo's own `.gitignore` excludes
+  both directories, so the step failed outright; and the step was skipped
+  entirely whenever the engine exited 1 (any failed review probe), throwing
+  away a good day of data in Actions' ephemeral workspace. The template now
+  uses `git add -f`, runs the commit step with `if: always()`, and documents
+  the exit-code semantics (0 clean / 1 partial, data kept / 2 gate, nothing
+  written / 3 crash). Its "private fork" advice was also wrong — forks of a
+  public repo cannot be made private — and now describes the private-copy
+  route correctly (READMEs updated to match).
+- **Wording sweep completed in the two files round 1 missed:** the bundled
+  Skill and the engine docstring no longer carry the pre-review phrasing
+  ("demonstrably wrong", a defunct third platform's name); the Skill's
+  honesty rule now matches the README's case-based wording, its report
+  template says "vs previous run" instead of "vs yesterday", and a starter
+  prompt plus the App Store URL → app-id recipe were added.
+- Engine: 429 back-off is capped at 120s (a hostile `Retry-After` can no
+  longer stall an unattended run for hours); crashes exit with code 3,
+  distinct from partial-failure 1; Highlights CLIMB entries are sorted by
+  ranks gained (they were first-come truncated); a true rating count of 0
+  no longer renders as "?"; dead `grossing_ids` bookkeeping removed.
+- READMEs: exit codes documented in Quickstart; the Actions workflow gets
+  its own section; Configuration notes the app-id recipe and that config
+  keys replace defaults wholesale; Features no longer lists grossing as a
+  reported chart (it is stored, not reported); Roadmap reordered —
+  multi-week validation first, the manual cross-check importer removed,
+  the review probe marked maintenance-mode; a one-line note on the daily
+  production run added before the license.
+- Poster copy aligned with the same wording pass (capability phrasing
+  instead of absolutes).
+
 ## 0.2.2 — 2026-11-07
 
 Open-source polish (no engine behaviour change):

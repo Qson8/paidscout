@@ -31,10 +31,11 @@ subscription, no scraped login-walled data.**
 ## Features
 
 - **Dual-source charts** — Apple legacy RSS *and* MarketingTools RSS, US & CN
-  storefronts, paid + grossing, overall and per-genre (Games, Utilities,
+  storefronts, paid charts overall and per-genre (Games, Utilities,
   Productivity, Education, Graphics & Design, Photo & Video). The two
   official feeds often disagree (top-50 overlap was ~36% on 2026-11-07);
   PaidScout stores them separately and flags it instead of merging ranks.
+  (Top-grossing charts are fetched and stored too, but not yet reported on.)
 - **History & diffs** — everything lands in SQLite. Every run after the first
   reports rank changes, new entries, **rating-count deltas** (a comparatively
   honest download-velocity proxy), price and version changes.
@@ -56,10 +57,21 @@ python3 paidscout.py --quick    # overall charts only, faster
 
 Output: a Markdown report in `reports/report-YYYY-MM-DD.md` and history in
 `data/monitor.db`. Run it daily (cron/launchd/GitHub Actions) and the reports
-start carrying day-over-day deltas from day two. A ready-to-copy GitHub
-Actions workflow that runs the engine daily and commits the history back is
-in [examples/github-actions-daily.yml](examples/github-actions-daily.yml) —
-drop it into `.github/workflows/` of your own (ideally private) fork.
+start carrying day-over-day deltas from day two.
+
+**Exit codes** — `0` clean run; `1` partial failures (the report is still
+written and the data is worth keeping; failures are listed in its header);
+`2` completeness gate tripped (a main chart came back too incomplete — the
+run is discarded, nothing is stored); `3` crash.
+
+### Run it daily with GitHub Actions
+
+A ready-to-copy workflow that runs the engine daily and commits the history
+back is in [examples/github-actions-daily.yml](examples/github-actions-daily.yml) —
+drop it into `.github/workflows/` of your copy of this repo. Note: a fork of
+a public repo is public too and cannot be made private; to keep your
+accumulated history private, create a separate private repository and copy
+`paidscout.py` plus the workflow into it.
 
 ## Configuration
 
@@ -71,9 +83,12 @@ python3 paidscout.py --config config.json
 ```
 
 The watchlist is a list of `[app_id, country, label]` — the same app can be
-tracked in several storefronts. Keywords are tracked per storefront; an app
-only appears in the keyword section if it ranks in the top 50 for a tracked
-keyword.
+tracked in several storefronts. An app's id is the number in its App Store
+URL (`apps.apple.com/app/id123456789` → `123456789`). Keywords are tracked
+per storefront; an app only appears in the keyword section if it ranks in
+the top 50 for a tracked keyword. Config keys replace the built-in defaults
+wholesale — if you override `keywords`, include every storefront you want
+tracked.
 
 ## Sample output
 
@@ -103,10 +118,13 @@ PaidScout is the data layer. The workflow it was built for:
 
 ## Roadmap
 
-- Review-probe depth (failures are already stored as NULL since 0.2.0; page-1 counts still saturate at 50 for hot apps)
+- **First, validation** — four weeks of daily runs, then a published review of whether rating velocity actually separates real movers from chart noise. This gates everything below.
 - Per-app detail pages (IAP list, description diffing between versions)
-- Optional Qimai/Sensor Tower cross-check importer for manual spot checks
 - Sparkline-style rank history export (CSV)
+- Review probe: maintenance mode (failures are stored as NULL since 0.2.0; page-1 counts saturate at 50 for hot apps — a structural limit of the free feed)
+
+PaidScout runs daily in production for its author's own research. If it
+helps you, a star helps it get found.
 
 ## License
 

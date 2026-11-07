@@ -13,10 +13,11 @@ by default (US storefront = primary signal), other storefronts as reference.
 
 **Honesty rule (non-negotiable):** never state download or revenue numbers.
 The free official feeds do not contain them, and third-party "estimates"
-(Qimai / Sensor Tower / data.ai) are panel-calibrated models — directional at
-the top of the charts, demonstrably wrong in the long tail. Report the
-verifiable signals: rank, rank movement, rating count and its daily delta,
-price, version cadence, keyword positions.
+(Qimai / Sensor Tower) are panel-calibrated models — directional at the top
+of the charts, unreliable in the long tail (in one check on 2026-11-07, a
+major platform showed $0 revenue for an app with ~280 estimated downloads
+that day). Report the verifiable signals: rank, rank movement, rating count
+and its daily delta, price, version cadence, keyword positions.
 
 ## Setup (once)
 
@@ -28,6 +29,14 @@ price, version cadence, keyword positions.
 4. Agree with the user where the candidate pool lives (a Markdown file) and
    where daily reports go. Learn the user's stack and existing assets — axis 5
    scoring depends on them.
+
+An app's id is the number in its App Store URL
+(`apps.apple.com/app/id123456789` → `123456789`).
+
+**Starter prompt** (the user can paste this to begin): "Run PaidScout for
+today: execute the engine, then write my daily brief from its report —
+highlights first, candidate directions scored on the 5 axes, pool changes
+proposed. Never state download or revenue numbers."
 
 ## Daily run
 
@@ -107,7 +116,7 @@ indicative, because rating-prompt intensity differs.
 - Header: date, storefronts covered.
 - Chart table: app, developer, price, rating / rating count (with delta),
   rank change, offline verdict, store link. Primary storefront first.
-- Changes vs yesterday: new / risen / fallen / dropped.
+- Changes vs previous run (name its date and the interval): new / risen / fallen / dropped.
 - At most 3 readings: price-band pattern, longevity vs new-entry signal, one
   concrete takeaway for the user's own apps.
 - Direction section: candidates ranked by score, each with its

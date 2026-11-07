@@ -63,9 +63,9 @@
 <text x="66" y="212" font-size="104" font-weight="bold" fill="#FFFFFF">Paid<tspan fill="#F5A524">Scout</tspan></text>
 <text x="70" y="272" font-size="31" fill="#E8F1FF">App Store Paid &amp; Offline App Research Engine</text>
 <text x="70" y="318" font-size="24" fill="#9DB8D9">给独立开发者的付费离线应用调研引擎</text>
-<text x="70" y="392" font-size="21" fill="#C7D8F2">Watch the paid charts daily. Track rating velocity, rank moves</text>
-<text x="70" y="424" font-size="21" fill="#C7D8F2">and keyword positions — and never trust an “estimate” again.</text>
-<text x="70" y="470" font-size="21" fill="#C7D8F2">每天盯付费榜，看名次、评分量增速与关键词，不编造下载和收入。</text>
+<text x="70" y="392" font-size="21" fill="#C7D8F2">Built to watch the paid charts daily. Track rating velocity,</text>
+<text x="70" y="424" font-size="21" fill="#C7D8F2">rank moves and keyword positions — skip the estimates, read the signals.</text>
+<text x="70" y="470" font-size="21" fill="#C7D8F2">为每日盯榜而建，看名次、评分量增速与关键词，不编造下载和收入。</text>
 </g>
 <g><rect x="70" y="512" width="183" height="38" rx="19" fill="#FFFFFF" fill-opacity="0.06" stroke="#2DD4BF" stroke-opacity="0.5"/><text x="84" y="537" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="1.5" fill="#CFE8FF">DUAL-SOURCE CHARTS</text></g>
 <g><rect x="262" y="512" width="157" height="38" rx="19" fill="#FFFFFF" fill-opacity="0.06" stroke="#2DD4BF" stroke-opacity="0.5"/><text x="276" y="537" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="1.5" fill="#CFE8FF">RATING VELOCITY</text></g>

@@ -1,13 +1,18 @@
 # PaidScout — daily run on GitHub Actions (example)
 #
-# Copy this file to .github/workflows/paidscout-daily.yml in your OWN fork.
-# Recommendation: use a PRIVATE fork — the workflow commits the SQLite
-# history (data/) and daily reports (reports/) back to the repo, and your
-# accumulated time series is the valuable part; keep it yours.
+# Copy this file to .github/workflows/paidscout-daily.yml in your own copy
+# of this repo. Privacy note: a fork of a public repo is public too and
+# cannot be made private — to keep your accumulated history private, create
+# a separate PRIVATE repository and copy paidscout.py + this workflow into
+# it. The workflow commits the SQLite history (data/) and daily reports
+# (reports/) back to the repo; that time series is the valuable part.
 #
-# The engine exits non-zero when data is incomplete (2 = completeness gate,
-# nothing was written; 1 = partial failures), so a broken day fails the run
-# loudly instead of silently poisoning the baseline.
+# Exit-code semantics: 2 = completeness gate (nothing was written), 1 =
+# partial failures (report and data ARE written and worth keeping), 3 =
+# crash. The commit step below therefore runs even when the engine step
+# reports failures (if: always()) — a day with a failed review probe must
+# not throw away a good day of chart data. On gate days (exit 2) nothing
+# changed on disk, so the commit step simply finds nothing to commit.
 
 name: PaidScout daily
 
@@ -33,9 +38,11 @@ jobs:
         run: python3 paidscout.py
 
       - name: Commit history and report
+        if: always()
         run: |
           git config user.name "paidscout-bot"
           git config user.email "actions@github.com"
-          git add data reports
+          # -f is required: the repo .gitignore excludes data/ and reports/
+          git add -f data reports
           git diff --cached --quiet || git commit -m "Daily run $(date -u +%F)"
           git push

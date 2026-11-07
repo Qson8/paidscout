@@ -2,7 +2,8 @@
 """
 PaidScout — App Store paid & offline app research engine for indie developers.
 
-What it does (the replicable core of what Qimai / Sensor Tower / data.ai do):
+What it does (the chart-monitoring layer of what Qimai / Sensor Tower do,
+using only Apple's official free feeds):
   - crawls App Store charts on a schedule (country x chart x genre), from TWO
     official Apple feeds that frequently disagree — and never merges their ranks
   - batch-looks-up metadata (price / rating / rating count / version / dates)
@@ -23,10 +24,10 @@ Stdlib only, no API key. Usage:
 Data lands in ./data/monitor.db, reports in ./reports/ (both relative to the
 current working directory).
 """
-import argparse, json, os, sqlite3, sys, time, urllib.parse, urllib.request
+import argparse, json, os, sqlite3, sys, time, traceback, urllib.parse, urllib.request
 from datetime import date as date_cls
 
-VERSION = "0.2.1"
+VERSION = "0.2.3"
 
 DEFAULT_CONFIG = {
     "countries": ["us", "cn"],
@@ -86,7 +87,8 @@ def fetch_json(url, retries=3, timeout=25):
             if e.code == 429:
                 # Rate-limited: honour Retry-After, back off much longer.
                 wait = e.headers.get("Retry-After") if e.headers else None
-                time.sleep(float(wait) if wait and str(wait).isdigit() else 20 * (attempt + 1))
+                wait_s = min(float(wait), 120) if wait and str(wait).isdigit() else 20 * (attempt + 1)
+                time.sleep(wait_s)
             else:
                 time.sleep(2 * (attempt + 1) + 1)
         except Exception as e:
@@ -210,7 +212,7 @@ def main():
     prev = previous_run_date(conn, today)
     all_ids = {cc: set() for cc in countries}
     legacy_paid, disagreements = {}, {}
-    chart_rows, grossing_ids = [], {cc: set() for cc in countries}
+    chart_rows = []
 
     # Phase 1: fetch everything into memory first. Nothing is written to the
     # database until the completeness gate below passes — a half-fetched day
@@ -223,7 +225,6 @@ def main():
             all_ids[cc].add(app_id)
         for app_id, rank, *_rest in legacy_chart(cc, "topgrossingapplications", limit):
             chart_rows.append((today, "legacy", cc, "topgrossing", 0, app_id, rank))
-            grossing_ids[cc].add(app_id)
         mp = dict(marketing_chart(cc, "top-paid", limit))
         for app_id, rank in mp.items():
             chart_rows.append((today, "marketing", cc, "toppaid", 0, app_id, rank))
@@ -394,18 +395,18 @@ def main():
                 if not pr:
                     highlights["new"].append(f"{cc.upper()} #{rank} {app_name}")
                 elif pr - rank >= 8:
-                    highlights["climb"].append(f"{cc.upper()} {app_name}: #{pr}→#{rank}")
+                    highlights["climb"].append((pr - rank, f"{cc.upper()} {app_name}: #{pr}→#{rank}"))
                 if delta is not None and delta > 0 and not is_noise(rcount, delta):
                     highlights["gain"].append((delta / (interval_days or 1), f"{cc.upper()} {app_name}: {fmt_delta(delta)} ratings ({pd})"))
             lines.append(f"| {rank} | {app_name} | {seller or '?'} | {m.get('price', price)} | "
-                         f"{m.get('averageUserRating') or '?'} ({rcount or '?'}) | {dr} | {pd} | {trend7(cc, app_id)} | {drank} | {pv} | {off} | "
+                         f"{m.get('averageUserRating') or '?'} ({rcount if rcount is not None else '?'}) | {dr} | {pd} | {trend7(cc, app_id)} | {drank} | {pv} | {off} | "
                          f"{'big-co' if is_big(seller, cfg['big_companies']) else 'indie?'} |")
         lines.append("")
     if prev and (highlights["new"] or highlights["climb"] or highlights["gain"]):
         lines.append("## Highlights (auto-extracted)")
         for h in highlights["new"][:8]:
             lines.append(f"- NEW: {h}")
-        for h in highlights["climb"][:5]:
+        for _v, h in sorted(highlights["climb"], reverse=True)[:5]:
             lines.append(f"- CLIMB: {h}")
         for _v, h in sorted(highlights["gain"], reverse=True)[:5]:
             lines.append(f"- RATING GAIN: {h}")
@@ -438,4 +439,12 @@ def main():
         sys.exit(1)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit:
+        raise
+    except Exception:
+        # Crash path gets its own exit code (3), distinct from 1 (partial
+        # failures, report still written) and 2 (integrity gate).
+        traceback.print_exc()
+        sys.exit(3)
