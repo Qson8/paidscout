@@ -1,4 +1,4 @@
-![PaidScout — 给独立开发者的 App Store 付费离线应用调研引擎](assets/poster.svg)
+![PaidScout — 给独立开发者的 App Store 付费离线应用调研引擎](assets/poster.png)
 
 # PaidScout
 

@@ -1,4 +1,4 @@
-![PaidScout — App Store Paid & Offline App Research Engine](assets/poster.svg)
+![PaidScout — App Store Paid & Offline App Research Engine](assets/poster.png)
 
 # PaidScout
 
