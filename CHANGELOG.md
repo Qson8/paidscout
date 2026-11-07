@@ -11,8 +11,9 @@ Open-source polish (no engine behaviour change):
   note clarifying that the sample report's store data is factual data shown
   for illustration, with rights remaining with its owners.
 - Repository About metadata set to the English description plus topics, and
-  the raster poster added at `assets/poster.png` (README header keeps the
-  SVG for crisp scaling; the PNG serves as social preview).
+  the raster poster added at `assets/poster.png` (initially as social
+  preview; the README headers were then switched to the raster poster the
+  same day — the SVG remains in `assets/` for other uses).
 
 ## 0.2.1 — 2026-11-07
 
