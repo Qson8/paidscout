@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.2 — 2026-11-07
+
+Open-source polish (no engine behaviour change):
+
+- Added `examples/github-actions-daily.yml`: a ready-to-copy workflow that
+  runs the engine daily in a fork and commits the history back (with a
+  private-fork recommendation, since the accumulated series is the asset).
+- README badges (MIT / Python 3.9+ / zero dependencies) and a License-section
+  note clarifying that the sample report's store data is factual data shown
+  for illustration, with rights remaining with its owners.
+- Repository About metadata set to the English description plus topics, and
+  the raster poster added at `assets/poster.png` (README header keeps the
+  SVG for crisp scaling; the PNG serves as social preview).
+
 ## 0.2.1 — 2026-11-07
 
 Compliance pass (four-role review of the product and its promotion copy,

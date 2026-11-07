@@ -4,6 +4,10 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
+![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)
+![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)
+![Dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen.svg)
+
 **App Store paid & offline app research engine for indie developers.**
 
 PaidScout is built to watch the App Store paid charts daily and turn them
@@ -52,7 +56,10 @@ python3 paidscout.py --quick    # overall charts only, faster
 
 Output: a Markdown report in `reports/report-YYYY-MM-DD.md` and history in
 `data/monitor.db`. Run it daily (cron/launchd/GitHub Actions) and the reports
-start carrying day-over-day deltas from day two.
+start carrying day-over-day deltas from day two. A ready-to-copy GitHub
+Actions workflow that runs the engine daily and commits the history back is
+in [examples/github-actions-daily.yml](examples/github-actions-daily.yml) —
+drop it into `.github/workflows/` of your own (ideally private) fork.
 
 ## Configuration
 
@@ -107,4 +114,6 @@ MIT. Built by an indie developer, for indie developers.
 Data is fetched from Apple's public feeds; respect their terms and rate
 limits (the engine batches lookups 80 at a time and spaces its keyword and
 review calls; Apple's Search API guidance is ~20 calls/minute and the
-default configuration stays within it).
+default configuration stays within it). The sample report under `examples/`
+contains factual store data (app names, sellers, prices, rating counts)
+shown for illustration; all rights in that data remain with its owners.

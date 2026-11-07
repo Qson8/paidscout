@@ -4,6 +4,10 @@
 
 [English](README.md) | **简体中文**
 
+![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)
+![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)
+![Dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen.svg)
+
 **给独立开发者的 App Store 付费离线应用调研引擎。**
 
 PaidScout 为每日监控 App Store 付费榜而建，把它变成独立开发者能直接用的调研：哪些付费、离线、单机应用是真在动，哪些新入榜是真热，一个人或小团队还有哪些能做、且有人愿意付费的方向。
@@ -29,7 +33,7 @@ python3 paidscout.py            # 完整一轮，约 1–2 分钟
 python3 paidscout.py --quick    # 只跑总榜，更快
 ```
 
-产出：`reports/report-YYYY-MM-DD.md` 日报一份，历史在 `data/monitor.db`。用 cron / launchd / GitHub Actions 每天跑，第二天起报告就开始带日环比变化。
+产出：`reports/report-YYYY-MM-DD.md` 日报一份，历史在 `data/monitor.db`。用 cron / launchd / GitHub Actions 每天跑，第二天起报告就开始带日环比变化。仓库里备了一份可直接抄的 Actions 模板（[examples/github-actions-daily.yml](examples/github-actions-daily.yml)）：放进你自己 fork 的 `.github/workflows/` 即可每日自动跑并把历史提交回来——建议用私有 fork，攒下来的时间序列是你自己的资产。
 
 ## 配置
 
@@ -68,4 +72,4 @@ PaidScout 是数据层。它服务的完整工作流是：
 ## 许可证
 
 MIT。由独立开发者做，给独立开发者用。
-数据来自苹果公开 Feed，请遵守其条款与频率限制（引擎已做批量查询与请求间隔）。
+数据来自苹果公开 Feed，请遵守其条款与频率限制（引擎已做批量查询与请求间隔，关键词请求间隔 ≥3 秒，卡在苹果约 20 次/分钟的指引内）。`examples/` 下的样例报告含商店事实数据（应用名、卖家、价格、评分量），仅作示意，其权利归原权利人。
