@@ -1,0 +1,5 @@
+data/
+reports/
+__pycache__/
+*.pyc
+.muse-github-snapshot-sync.json
