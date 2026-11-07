@@ -93,6 +93,9 @@ Score shortlisted apps as *direction candidates*, never as clone targets:
 5. **Fit with the user's stack & assets** — buildable by this user with their
    tools; leverage from products/content they already have.
 
+
+**Reserved cross-signal — web-wide heat (placeholder only, not scored).** A future signal slot is reserved for whether the same direction is simultaneously heating up in general web hot-search trends (source would be the hot-keywords board at blog.hanfucn.com/hot-keywords). User decision (2026-11-07): the two pipelines are deliberately NOT merged — different data domains, different purposes — but a direction rising on the paid chart *and* in web-wide attention is a doubly-validated signal. Until activation this slot is unscored: it does not affect the 5-axis total or the ≥6 pool threshold. Revisit only after ≥2 weeks of daily engine data; if activated, score it 0–2 as a separate line shown next to — never inside — the 5-axis total, and record the activation in this file and the changelog.
+
 Big-company or licence-driven hits are **category-demand evidence only** —
 never present them as directions to copy.
 
@@ -105,8 +108,9 @@ noise, not demand.
 Reading the deltas (engine ≥0.2.0 already annotates these — respect them):
 a **negative** delta usually means the rating count reset with a new app
 version, not negative sales; deltas are normalised **per day** when runs are
-more than a day apart, and a 7-day trend column smooths Apple's batched
-rating updates; deltas under ~5/day on apps with fewer than 1,000 ratings are
+more than a day apart, and a windowed trend column (7/30/90 days, always
+labelled with its real span) smooths Apple's batched rating updates;
+deltas under ~5/day on apps with fewer than 1,000 ratings are
 marked **(noise)** — never build an argument on them. Deltas are comparable
 across days for the *same* app; across apps and categories they are only
 indicative, because rating-prompt intensity differs.
@@ -116,6 +120,12 @@ indicative, because rating-prompt intensity differs.
 - Header: date, storefronts covered.
 - Chart table: app, developer, price, rating / rating count (with delta),
   rank change, offline verdict, store link. Primary storefront first.
+- Free-but-earning section (engine ≥0.2.4): free apps on the grossing
+  chart, with days-on-chart persistence. Read it as category-demand
+  evidence for the free + IAP/subscription/credits model — never as
+  paid-download candidates, never scored on the 5 axes, and never a source
+  of revenue figures. Non-big-company rows that persist for weeks may join
+  the watchlist for a closer look.
 - Changes vs previous run (name its date and the interval): new / risen / fallen / dropped.
 - At most 3 readings: price-band pattern, longevity vs new-entry signal, one
   concrete takeaway for the user's own apps.

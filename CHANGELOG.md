@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.2.4 — 2026-11-08
+
+Closes the freemium blind spot and adds the time dimension:
+
+- **Free-but-earning section.** The paid charts cannot see free-download
+  apps that monetise via IAP / subscriptions / credits (the model behind
+  most of the store's revenue). The engine now also fetches the top-free
+  chart, includes grossing-chart apps in metadata lookup, and reports the
+  free apps (price 0) sitting on the top-grossing chart — with their
+  free-chart rank when present, and a **days-on-grossing** persistence
+  count over the stored history (≤90 days). On 2026-11-08 the grossing
+  top-50 was 50/50 free apps in both storefronts. The section is labelled
+  as category-demand evidence and watchlist material, never merged into
+  the paid rankings, and never a source of revenue figures: presence
+  proves earning, not amounts.
+- **Windowed trend.** The fixed "7d trend" column is now a windowed trend
+  (7/30/90 days): it picks the longest window the stored history actually
+  supports and prints the real span — a 12-day history reports (12d),
+  never a dressed-up 30-day figure. Apple's free feeds are snapshots, so
+  there is no historical backfill; the 90-day window fills in as daily
+  runs accumulate (the author's history starts 2026-11-07).
+- Big-company list extended with platform-scale sellers that dominate the
+  grossing chart (OpenAI, TikTok, Snap, Roblox, Anthropic, Alipay, iQIYI,
+  Bilibili, miHoYo, …) so the free-but-earning table flags them correctly.
+- Tests: 16 (added `free_earners` ×4 and `window_trend` ×4). A schema slip
+  in the new persistence query was caught in pre-release verification —
+  by the 0.2.3 crash path doing its job (exit 3, traceback, nothing
+  half-written).
+
 ## 0.2.3 — 2026-11-07
 
 Fixes from the second-round review (six reviewers; two findings reproduced

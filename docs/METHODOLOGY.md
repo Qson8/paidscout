@@ -36,6 +36,7 @@ differences are in the estimation layer on top:
 | Rank history & diffs | ✔ | ✔ (SQLite, per-run) |
 | Rating-count velocity | internal signal | ✔ reported as the raw delta |
 | Keyword positions | ✔ | ✔ for a watchlist (Search API, approximate) |
+| Freemium earning coverage | ✔ (estimated amounts) | △ presence only — free apps on the grossing chart are listed with persistence (days on chart); amounts are never estimated |
 | Review velocity | ✔ | △ page-1 probe for watchlist apps — Apple's reviews feed intermittently returns empty for some apps/storefronts; failures are stored as NULL (never as zero) and page-1 counts saturate at 50, so treat this as a weak signal |
 | Download estimates | model + panel | ✘ — reports velocity proxies instead |
 | Revenue estimates | model + panel | ✘ — long-tail revenue estimates can be far off (see field check) |
@@ -65,3 +66,18 @@ third-party estimates as a cross-reference, never as ground truth.
 - **Two official feeds disagree** (on 2026-11-07 the US top-50s from Apple's
   legacy and marketing-tools feeds shared only ~18 apps). Never merge them;
   PaidScout keeps sources in separate rows and flags the disagreement.
+- **Free-but-earning** (since 0.2.4): the paid charts are blind to the
+  free-download + IAP/subscription/credits model. PaidScout therefore also
+  lists free apps (price 0) that sit on the top-grossing chart. Presence
+  there proves an app earns; it never proves how much. On 2026-11-08 all
+  50 grossing spots in both the US and CN storefronts were free apps —
+  upfront-paid has effectively exited the grossing top-50, so the useful
+  reading is persistence and the non-big-company rows, not a single day.
+- **Time windows**: Apple's free feeds are snapshots — no historical
+  backfill exists anywhere in the free data. PaidScout's time dimension is
+  a rolling window that starts when the engine starts (2026-11-07 for the
+  author's instance) and fills in daily: trends pick the longest supported
+  window (7/30/90 days) and always print the real span, and 'days on
+  grossing' counts distinct days present within the last 90. A (12d)
+  figure is a 12-day figure; nothing is extrapolated into a fake 90-day
+  history.

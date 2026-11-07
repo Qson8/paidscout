@@ -27,7 +27,7 @@ current working directory).
 import argparse, json, os, sqlite3, sys, time, traceback, urllib.parse, urllib.request
 from datetime import date as date_cls
 
-VERSION = "0.2.3"
+VERSION = "0.2.4"
 
 DEFAULT_CONFIG = {
     "countries": ["us", "cn"],
@@ -42,7 +42,12 @@ DEFAULT_CONFIG = {
                       "bandai namco", "rovio", "rockstar", "sega", "nintendo",
                       "capcom", "square enix", "konami", "505 games", "ustwo",
                       "ironhide", "ninja kiwi", "shanghai hode", "playdigious",
-                      "devolver", "annapurna", "raw fury", "xinghan", "xd inc"],
+                      "devolver", "annapurna", "raw fury", "xinghan", "xd inc",
+                      "openai", "anthropic", "tiktok", "snap", "roblox", "scopely",
+                      "dream games", "microfun", "linkedin", "alipay", "iqiyi",
+                      "bilibili", "kugou", "peacock", "cbs", "warnermedia",
+                      "crunchyroll", "life360", "douyin", "lianmeng", "mihoyo",
+                      "perfect world", "netease games", "ant group"],
     "offline_positive": ["offline", "no wifi", "no internet", "no wi-fi",
                          "single player", "single-player", "no ads", "no account",
                          "no sign-up", "no signup", "works without internet",
@@ -184,6 +189,58 @@ def fmt_delta(delta):
         return f"{delta} (version reset?)"
     return f"+{delta}"
 
+def free_earners(grossing, free, meta_cc):
+    """Apps that are free to download (price 0) yet sit on the top-grossing
+    chart — they monetise via IAP / subscriptions / credits, a model the
+    paid-download charts cannot see at all. `grossing` and `free` map
+    app_id -> rank; `meta_cc` maps app_id -> lookup record. Returns rows
+    sorted by grossing rank. Presence on the grossing chart proves earning;
+    it says nothing about amounts, and these rows are never merged into
+    the paid rankings."""
+    out = []
+    for app_id, grank in grossing.items():
+        m = meta_cc.get(app_id)
+        if not m or m.get("price") != 0:
+            continue
+        out.append({
+            "app_id": app_id, "grank": grank, "frank": free.get(app_id),
+            "name": m.get("trackName") or app_id, "seller": m.get("sellerName") or "?",
+            "rating": m.get("averageUserRating"), "rcount": m.get("userRatingCount"),
+            "genre": m.get("primaryGenreName") or "?",
+            "desc": (m.get("description") or "")})
+    out.sort(key=lambda r: r["grank"])
+    return out
+
+def window_trend(rows, windows=(7, 30, 90)):
+    """Windowed rating velocity from observations [(date, rating_count)],
+    newest first, all strictly before today. Picks the longest window the
+    history actually supports and reports the real span alongside — a 12-day
+    history yields a (12d) figure, never a fake '30d' one. The baseline is
+    the newest observation at or before (newest - window). Returns
+    (per_day, span_days) or None when history is too thin (< 2 points or
+    span < 2 days). No backfill exists: Apple's free feeds are snapshots,
+    so windows fill in only as daily runs accumulate."""
+    from datetime import date as _d, timedelta as _td
+    if len(rows) < 2:
+        return None
+    d_new, rc_new = rows[0]
+    d_new_dt = _d.fromisoformat(d_new)
+    span_total = (d_new_dt - _d.fromisoformat(rows[-1][0])).days
+    if span_total < 2:
+        return None
+    for w in sorted(windows, reverse=True):
+        if span_total < w:
+            continue
+        target = d_new_dt - _td(days=w)
+        for d, rc in rows:
+            if _d.fromisoformat(d) <= target:
+                span = (d_new_dt - _d.fromisoformat(d)).days
+                if span >= 2:
+                    return ((rc_new - rc) / span, span)
+                break
+    d_old, rc_old = rows[-1]
+    return ((rc_new - rc_old) / span_total, span_total)
+
 def previous_run_date(conn, today):
     row = conn.execute("SELECT MAX(run_date) FROM chart_rank WHERE run_date < ?", (today,)).fetchone()
     return row[0] if row else None
@@ -213,6 +270,7 @@ def main():
     prev = previous_run_date(conn, today)
     all_ids = {cc: set() for cc in countries}
     legacy_paid, disagreements = {}, {}
+    grossing_maps, free_maps = {}, {}
     chart_rows = []
 
     # Phase 1: fetch everything into memory first. Nothing is written to the
@@ -224,8 +282,15 @@ def main():
         for app_id, rank, *_rest in lp:
             chart_rows.append((today, "legacy", cc, "toppaid", 0, app_id, rank))
             all_ids[cc].add(app_id)
+        grossing_maps[cc] = {}
         for app_id, rank, *_rest in legacy_chart(cc, "topgrossingapplications", limit):
             chart_rows.append((today, "legacy", cc, "topgrossing", 0, app_id, rank))
+            grossing_maps[cc][app_id] = rank
+            all_ids[cc].add(app_id)
+        free_maps[cc] = {}
+        for app_id, rank, *_rest in legacy_chart(cc, "topfreeapplications", limit):
+            chart_rows.append((today, "legacy", cc, "topfree", 0, app_id, rank))
+            free_maps[cc][app_id] = rank
         mp = dict(marketing_chart(cc, "top-paid", limit))
         for app_id, rank in mp.items():
             chart_rows.append((today, "marketing", cc, "toppaid", 0, app_id, rank))
@@ -339,17 +404,22 @@ def main():
         # Small-base apps: tiny deltas are rating-prompt noise, not signal.
         return rcount is not None and delta is not None and rcount < 1000 and abs(delta) / (interval_days or 1) < 5
 
-    def trend7(cc, app_id):
+    def trend(cc, app_id):
         rows = conn.execute(
             "SELECT run_date, rating_count FROM app_meta WHERE country=? AND app_id=? AND run_date<? "
-            "AND rating_count IS NOT NULL ORDER BY run_date DESC LIMIT 8", (cc, app_id, today)).fetchall()
-        if len(rows) < 2:
+            "AND rating_count IS NOT NULL ORDER BY run_date DESC LIMIT 100", (cc, app_id, today)).fetchall()
+        r = window_trend(rows)
+        if r is None:
             return "—"
-        (d_new, rc_new), (d_old, rc_old) = rows[0], rows[-1]
-        span = (_dt.fromisoformat(d_new) - _dt.fromisoformat(d_old)).days
-        if span < 2:
-            return "—"
-        return f"{(rc_new - rc_old) / span:+.1f}/d"
+        v, span = r
+        return f"{v:+.1f}/d ({span}d)"
+
+    def grossing_days(cc, app_id):
+        row = conn.execute(
+            "SELECT COUNT(DISTINCT run_date) FROM chart_rank WHERE source='legacy' AND chart='topgrossing' "
+            "AND genre=0 AND country=? AND app_id=? AND run_date<=? AND run_date>=date(?, '-90 days')",
+            (cc, app_id, today, today)).fetchone()
+        return row[0] if row else 0
 
     os.makedirs(args.report_dir, exist_ok=True)
     lines = [f"# PaidScout Report — {today}",
@@ -366,7 +436,7 @@ def main():
     highlights = {"new": [], "climb": [], "gain": []}
     for cc in countries:
         lines.append(f"## {cc.upper()} — Top Paid (legacy chart)")
-        lines.append("| # | App | Seller | Price | Rating (count) | Δratings | Δ/day | 7d trend | Rank Δ | Price/Ver Δ | Offline | Indie? |")
+        lines.append("| # | App | Seller | Price | Rating (count) | Δratings | Δ/day | Trend (window) | Rank Δ | Price/Ver Δ | Offline | Indie? |")
         lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
         counts[cc] = len(legacy_paid[cc])
         for app_id, rank, price, name, genre_name, summary in legacy_paid[cc][:limit]:
@@ -400,8 +470,32 @@ def main():
                 if delta is not None and delta > 0 and not is_noise(rcount, delta):
                     highlights["gain"].append((delta / (interval_days or 1), f"{cc.upper()} {app_name}: {fmt_delta(delta)} ratings ({pd})"))
             lines.append(f"| {rank} | {app_name} | {seller or '?'} | {m.get('price', price)} | "
-                         f"{m.get('averageUserRating') or '?'} ({rcount if rcount is not None else '?'}) | {dr} | {pd} | {trend7(cc, app_id)} | {drank} | {pv} | {off} | "
+                         f"{m.get('averageUserRating') or '?'} ({rcount if rcount is not None else '?'}) | {dr} | {pd} | {trend(cc, app_id)} | {drank} | {pv} | {off} | "
                          f"{'big-co' if is_big(seller, cfg['big_companies']) else 'indie?'} |")
+        lines.append("")
+    lines.append("## Free-but-earning (free download, on the grossing chart)")
+    lines.append("Free apps that still rank on the top-grossing chart: they charge nothing "
+                 "upfront and monetise via in-app purchases, subscriptions or credits — a "
+                 "model the paid charts above cannot see. Grossing presence proves earning, "
+                 "never amounts. Read this section as category-demand evidence and watchlist "
+                 "material, not as paid-download candidates; ranks are never merged with the "
+                 "paid tables. 'Days on grossing' counts distinct days in the stored history "
+                 "(capped at 90) — it grows as daily runs accumulate. Note that on most days "
+                 "this is nearly the whole grossing chart: upfront-paid apps have essentially "
+                 "exited the grossing top-50, so the indie-relevant reading is in the non-big-co "
+                 "rows and in persistence over time, not in any single day's rank.")
+    for cc in countries:
+        earners = free_earners(grossing_maps.get(cc, {}), free_maps.get(cc, {}), meta.get(cc, {}))
+        lines.append(f"### {cc.upper()} — {len(earners)} free apps on the grossing top-{limit}")
+        if earners:
+            lines.append("| Grossing # | App | Seller | Rating (count) | Free chart # | Days on grossing (≤90d) | Genre | Offline | Indie? |")
+            lines.append("|---|---|---|---|---|---|---|---|---|")
+            for e in earners[:20]:
+                off = classify_offline(e["desc"], cfg["offline_positive"], cfg["offline_negative"])
+                lines.append(f"| {e['grank']} | {e['name']} | {e['seller']} | "
+                             f"{e['rating'] or '?'} ({e['rcount'] if e['rcount'] is not None else '?'}) | "
+                             f"{e['frank'] or '—'} | {grossing_days(cc, e['app_id'])} | {e['genre']} | {off} | "
+                             f"{'big-co' if is_big(e['seller'], cfg['big_companies']) else 'indie?'} |")
         lines.append("")
     if prev and (highlights["new"] or highlights["climb"] or highlights["gain"]):
         lines.append("## Highlights (auto-extracted)")

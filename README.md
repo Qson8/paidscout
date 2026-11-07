@@ -38,7 +38,14 @@ subscription, no scraped login-walled data.**
   (Top-grossing charts are fetched and stored too, but not yet reported on.)
 - **History & diffs** — everything lands in SQLite. Every run after the first
   reports rank changes, new entries, **rating-count deltas** (a comparatively
-  honest download-velocity proxy), price and version changes.
+  honest download-velocity proxy), price and version changes. Trends are
+  windowed (7/30/90 days) and always labelled with the real span the stored
+  history supports — free feeds are snapshots, so no backfill is faked.
+- **Free-but-earning watch** — the paid charts are blind to free apps that
+  monetise via IAP, subscriptions or credits. PaidScout also lists free
+  apps sitting on the top-grossing chart, with days-on-chart persistence
+  (≤90 days), as category-demand evidence — presence proves earning, never
+  amounts.
 - **Watchlist tracking** — keyword search positions and recent-review velocity
   for the apps you care about (your candidates — and your own app).
 - **First-pass filters** — offline/single-device heuristics from store copy,
