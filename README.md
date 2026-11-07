@@ -1,5 +1,7 @@
 # PaidScout
 
+**English** | [简体中文](README.zh-CN.md)
+
 **App Store paid & offline app research engine for indie developers.**
 
 PaidScout watches the App Store paid charts every day and turns them into
