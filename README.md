@@ -94,7 +94,7 @@ PaidScout is the data layer. The workflow it was built for:
 
 ## Roadmap
 
-- Review-probe reliability (some storefront feeds intermittently return 0)
+- Review-probe depth (failures are already stored as NULL since 0.2.0; page-1 counts still saturate at 50 for hot apps)
 - Per-app detail pages (IAP list, description diffing between versions)
 - Optional Qimai/Sensor Tower cross-check importer for manual spot checks
 - Sparkline-style rank history export (CSV)

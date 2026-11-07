@@ -93,6 +93,15 @@ or two consecutive reviews score it down. Highlight rating-delta outliers:
 a big delta means real heat; a high rank with a near-zero delta is chart
 noise, not demand.
 
+Reading the deltas (engine ≥0.2.0 already annotates these — respect them):
+a **negative** delta usually means the rating count reset with a new app
+version, not negative sales; deltas are normalised **per day** when runs are
+more than a day apart, and a 7-day trend column smooths Apple's batched
+rating updates; deltas under ~5/day on apps with fewer than 1,000 ratings are
+marked **(noise)** — never build an argument on them. Deltas are comparable
+across days for the *same* app; across apps and categories they are only
+indicative, because rating-prompt intensity differs.
+
 ## Report shape
 
 - Header: date, storefronts covered.

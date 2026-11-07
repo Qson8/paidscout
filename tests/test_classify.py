@@ -1,6 +1,6 @@
 import os, sys, unittest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from paidscout import classify_offline, is_big, DEFAULT_CONFIG
+from paidscout import classify_offline, is_big, fmt_delta, DEFAULT_CONFIG
 
 POS = DEFAULT_CONFIG["offline_positive"]
 NEG = DEFAULT_CONFIG["offline_negative"]
@@ -24,8 +24,23 @@ class TestClassifyOffline(unittest.TestCase):
     def test_big_company(self):
         self.assertTrue(is_big("Mojang AB", BIG))
         self.assertTrue(is_big("Shenzhen Tencent Tianyou Technology Ltd", BIG))
+        self.assertTrue(is_big("X.D. Network Inc.", BIG))
+        self.assertTrue(is_big("East2west Network Tech. Co. Ltd.", BIG))
+        self.assertTrue(is_big("Bandai Namco Entertainment Inc.", BIG))
         self.assertFalse(is_big("Seungyun Kim", BIG))
         self.assertFalse(is_big("", BIG))
+
+class TestFmtDelta(unittest.TestCase):
+    def test_positive(self):
+        self.assertEqual(fmt_delta(123), "+123")
+
+    def test_negative_is_annotated_not_broken(self):
+        out = fmt_delta(-123)
+        self.assertNotIn("+-", out)
+        self.assertIn("version reset", out)
+
+    def test_none(self):
+        self.assertEqual(fmt_delta(None), "—")
 
 if __name__ == "__main__":
     unittest.main()

@@ -26,7 +26,7 @@ current working directory).
 import argparse, json, os, sqlite3, sys, time, urllib.parse, urllib.request
 from datetime import date as date_cls
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
 DEFAULT_CONFIG = {
     "countries": ["us", "cn"],
@@ -37,10 +37,16 @@ DEFAULT_CONFIG = {
                       "google", "apple", "meta", "bytedance", "alibaba", "baidu",
                       "electronic arts", "ubisoft", "gameloft", "king", "supercell",
                       "disney", "nickelodeon", "zhejiang royalflush", "travelsky",
-                      "samsung", "amazon", "spotify"],
+                      "samsung", "amazon", "spotify", "x.d. network", "east2west",
+                      "bandai namco", "rovio", "rockstar", "sega", "nintendo",
+                      "capcom", "square enix", "konami", "505 games", "ustwo",
+                      "ironhide", "ninja kiwi", "shanghai hode", "playdigious",
+                      "devolver", "annapurna", "raw fury", "xinghan", "xd inc"],
     "offline_positive": ["offline", "no wifi", "no internet", "no wi-fi",
                          "single player", "single-player", "no ads", "no account",
-                         "no sign-up", "no signup", "无需联网", "离线", "单机",
+                         "no sign-up", "no signup", "works without internet",
+                         "airplane mode", "play anywhere", "pass and play",
+                         "无需联网", "离线", "单机", "单人", "本地对战",
                          "无广告", "无需网络", "本地"],
     "offline_negative": ["online multiplayer", "multiplayer online",
                          "requires internet", "internet connection required",
@@ -156,6 +162,15 @@ def is_big(seller, big_list):
     s = (seller or "").lower()
     return any(b in s for b in big_list)
 
+def fmt_delta(delta):
+    """Format a rating-count delta. Negative deltas normally mean the count
+    reset when a new version shipped — never render them as '+-123'."""
+    if delta is None:
+        return "—"
+    if delta < 0:
+        return f"{delta} (version reset?)"
+    return f"+{delta}"
+
 def previous_run_date(conn, today):
     row = conn.execute("SELECT MAX(run_date) FROM chart_rank WHERE run_date < ?", (today,)).fetchone()
     return row[0] if row else None
@@ -184,35 +199,48 @@ def main():
     conn = db_connect(os.path.join(args.data_dir, "monitor.db"))
     prev = previous_run_date(conn, today)
     all_ids = {cc: set() for cc in countries}
-    legacy_paid, disagreements = {}, []
+    legacy_paid, disagreements = {}, {}
+    chart_rows, grossing_ids = [], {cc: set() for cc in countries}
 
+    # Phase 1: fetch everything into memory first. Nothing is written to the
+    # database until the completeness gate below passes — a half-fetched day
+    # must never become tomorrow's baseline.
     for cc in countries:
         lp = legacy_chart(cc, "toppaidapplications", limit)
         legacy_paid[cc] = lp
         for app_id, rank, *_rest in lp:
-            conn.execute("INSERT OR REPLACE INTO chart_rank VALUES (?,?,?,?,?,?,?)",
-                         (today, "legacy", cc, "toppaid", 0, app_id, rank))
+            chart_rows.append((today, "legacy", cc, "toppaid", 0, app_id, rank))
             all_ids[cc].add(app_id)
         for app_id, rank, *_rest in legacy_chart(cc, "topgrossingapplications", limit):
-            conn.execute("INSERT OR REPLACE INTO chart_rank VALUES (?,?,?,?,?,?,?)",
-                         (today, "legacy", cc, "topgrossing", 0, app_id, rank))
+            chart_rows.append((today, "legacy", cc, "topgrossing", 0, app_id, rank))
+            grossing_ids[cc].add(app_id)
         mp = dict(marketing_chart(cc, "top-paid", limit))
         for app_id, rank in mp.items():
-            conn.execute("INSERT OR REPLACE INTO chart_rank VALUES (?,?,?,?,?,?,?)",
-                         (today, "marketing", cc, "toppaid", 0, app_id, rank))
+            chart_rows.append((today, "marketing", cc, "toppaid", 0, app_id, rank))
             all_ids[cc].add(app_id)
         if lp and mp:
             legacy_ids = {a for a, *_ in lp}
-            disagreements.append(
+            disagreements[cc] = (
                 f"{cc}: marketing-only in top{limit}: {len(set(mp) - legacy_ids)} apps; "
                 f"legacy-only: {len(legacy_ids - set(mp))} apps (two official feeds disagree — ranks never merged)")
         if not args.quick:
             for gid in genres:
                 for app_id, rank, *_rest in legacy_chart(cc, "toppaidapplications", limit, gid):
-                    conn.execute("INSERT OR REPLACE INTO chart_rank VALUES (?,?,?,?,?,?,?)",
-                                 (today, "legacy", cc, "toppaid", gid, app_id, rank))
+                    chart_rows.append((today, "legacy", cc, "toppaid", gid, app_id, rank))
                     all_ids[cc].add(app_id)
-        conn.commit()
+
+    # Completeness gate: each storefront's primary paid chart must be
+    # substantially complete, otherwise abort the whole run (exit 2) and
+    # write nothing.
+    gate_min = max(20, int(limit * 0.8))
+    bad = [f"{cc}: legacy top-paid returned {len(legacy_paid[cc])} rows (< {gate_min})"
+           for cc in countries if len(legacy_paid[cc]) < gate_min]
+    if bad:
+        print(json.dumps({"date": today, "error": "completeness gate failed", "detail": bad,
+                          "failures": FAILURES}, ensure_ascii=False, indent=1))
+        sys.exit(2)
+    conn.executemany("INSERT OR REPLACE INTO chart_rank VALUES (?,?,?,?,?,?,?)", chart_rows)
+    conn.commit()
 
     meta = {}
     for cc in countries:
@@ -220,7 +248,7 @@ def main():
         got = lookup_batch(cc, all_ids[cc])
         meta[cc] = got
         for app_id, r in got.items():
-            off = classify_offline(r.get("description", "") or summaries.get(app_id, ""),
+            off = classify_offline((r.get("description", "") or "") + " " + summaries.get(app_id, ""),
                                    cfg["offline_positive"], cfg["offline_negative"])
             conn.execute("INSERT OR REPLACE INTO app_meta VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                          (today, cc, app_id, r.get("trackName"), r.get("sellerName"),
@@ -252,12 +280,17 @@ def main():
         for app_id, cc, label in watchlist:
             url = f"https://itunes.apple.com/{cc}/rss/customerreviews/id={app_id}/sortBy=mostRecent/json"
             data = fetch_json(url, retries=3)
-            n, latest = 0, ""
+            # NULL means "probe failed / feed returned nothing" — it must stay
+            # distinguishable from a true zero, or the time series is poisoned.
+            n, latest = None, ""
             if data and data.get("feed", {}).get("entry"):
                 entries = [e for e in data["feed"]["entry"] if "im:rating" in e]
-                n = len(entries)
-                dates = [e.get("updated", {}).get("label", "") for e in entries]
-                latest = max(dates) if dates else ""
+                if entries:
+                    n = len(entries)
+                    dates = [e.get("updated", {}).get("label", "") for e in entries]
+                    latest = max(dates) if dates else ""
+            if n is None:
+                FAILURES.append(f"review probe empty: {label} ({cc}) id={app_id}")
             conn.execute("INSERT OR REPLACE INTO review_probe VALUES (?,?,?,?,?)",
                          (today, cc, app_id, n, latest))
             time.sleep(0.4)
@@ -276,35 +309,94 @@ def main():
                            (prev, cc, app_id)).fetchone()
         return row[0] if row else None
 
+    from datetime import datetime as _dt
+    interval_days = None
+    if prev:
+        interval_days = max(1, (_dt.fromisoformat(today) - _dt.fromisoformat(prev)).days)
+
+    def per_day(delta):
+        if delta is None or not interval_days:
+            return "—"
+        v = delta / interval_days
+        s = f"{v:+.1f}/d"
+        return s
+
+    def is_noise(rcount, delta):
+        # Small-base apps: tiny deltas are rating-prompt noise, not signal.
+        return rcount is not None and delta is not None and rcount < 1000 and abs(delta) / (interval_days or 1) < 5
+
+    def trend7(cc, app_id):
+        rows = conn.execute(
+            "SELECT run_date, rating_count FROM app_meta WHERE country=? AND app_id=? AND run_date<? "
+            "AND rating_count IS NOT NULL ORDER BY run_date DESC LIMIT 8", (cc, app_id, today)).fetchall()
+        if len(rows) < 2:
+            return "—"
+        (d_new, rc_new), (d_old, rc_old) = rows[0], rows[-1]
+        span = (_dt.fromisoformat(d_new) - _dt.fromisoformat(d_old)).days
+        if span < 2:
+            return "—"
+        return f"{(rc_new - rc_old) / span:+.1f}/d"
+
     os.makedirs(args.report_dir, exist_ok=True)
     lines = [f"# PaidScout Report — {today}",
-             f"Previous run baseline: {prev or 'none (first run)'}",
+             f"Previous run baseline: {prev or 'none (first run)'}"
+             + (f" (interval: {interval_days} day(s); deltas also shown per-day)" if interval_days and interval_days > 1 else ""),
              "Sources: Apple legacy RSS charts + MarketingTools RSS + Lookup + Search + Reviews feeds (all official, free).",
              ""]
-    for note in disagreements:
+    for note in disagreements.values():
         lines.append(f"- CROSS-SOURCE: {note}")
     if FAILURES:
         lines.append(f"- FETCH FAILURES ({len(FAILURES)}): " + " | ".join(FAILURES[:6]))
     lines.append("")
     counts = {}
+    highlights = {"new": [], "climb": [], "gain": []}
     for cc in countries:
         lines.append(f"## {cc.upper()} — Top Paid (legacy chart)")
-        lines.append("| # | App | Seller | Price | Rating (count) | Δratings vs prev | Rank Δ | Offline | Indie? |")
-        lines.append("|---|---|---|---|---|---|---|---|---|")
+        lines.append("| # | App | Seller | Price | Rating (count) | Δratings | Δ/day | 7d trend | Rank Δ | Price/Ver Δ | Offline | Indie? |")
+        lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
         counts[cc] = len(legacy_paid[cc])
         for app_id, rank, price, name, genre_name, summary in legacy_paid[cc][:limit]:
             m = meta[cc].get(app_id, {})
-            off = classify_offline(m.get("description", "") or summary,
+            off = classify_offline((m.get("description", "") or "") + " " + summary,
                                    cfg["offline_positive"], cfg["offline_negative"])
             seller = m.get("sellerName", "")
             rcount = m.get("userRatingCount")
+            app_name = m.get("trackName", name)
             pm = prev_meta(cc, app_id)
-            dr = f"+{rcount - pm[0]}" if pm and rcount is not None and pm[0] is not None else "—"
+            delta = (rcount - pm[0]) if pm and rcount is not None and pm[0] is not None else None
+            dr = fmt_delta(delta)
+            pd = per_day(delta)
+            if is_noise(rcount, delta):
+                pd += " (noise)"
             pr = prev_rank(cc, app_id)
             drank = f"{pr - rank:+d}" if pr else ("NEW" if prev else "—")
-            lines.append(f"| {rank} | {m.get('trackName', name)} | {seller or '?'} | {m.get('price', price)} | "
-                         f"{m.get('averageUserRating') or '?'} ({rcount or '?'}) | {dr} | {drank} | {off} | "
+            pv = "—"
+            if pm:
+                bits = []
+                if pm[1] is not None and m.get("price") is not None and pm[1] != m.get("price"):
+                    bits.append(f"price {pm[1]}→{m.get('price')}")
+                if pm[2] and m.get("version") and pm[2] != m.get("version"):
+                    bits.append(f"v{pm[2]}→{m.get('version')}")
+                pv = "; ".join(bits) if bits else "—"
+            if prev:
+                if not pr:
+                    highlights["new"].append(f"{cc.upper()} #{rank} {app_name}")
+                elif pr - rank >= 8:
+                    highlights["climb"].append(f"{cc.upper()} {app_name}: #{pr}→#{rank}")
+                if delta is not None and delta > 0 and not is_noise(rcount, delta):
+                    highlights["gain"].append((delta / (interval_days or 1), f"{cc.upper()} {app_name}: {fmt_delta(delta)} ratings ({pd})"))
+            lines.append(f"| {rank} | {app_name} | {seller or '?'} | {m.get('price', price)} | "
+                         f"{m.get('averageUserRating') or '?'} ({rcount or '?'}) | {dr} | {pd} | {trend7(cc, app_id)} | {drank} | {pv} | {off} | "
                          f"{'big-co' if is_big(seller, cfg['big_companies']) else 'indie?'} |")
+        lines.append("")
+    if prev and (highlights["new"] or highlights["climb"] or highlights["gain"]):
+        lines.append("## Highlights (auto-extracted)")
+        for h in highlights["new"][:8]:
+            lines.append(f"- NEW: {h}")
+        for h in highlights["climb"][:5]:
+            lines.append(f"- CLIMB: {h}")
+        for _v, h in sorted(highlights["gain"], reverse=True)[:5]:
+            lines.append(f"- RATING GAIN: {h}")
         lines.append("")
     if kw_hits:
         lines.append("## Watchlist keyword ranks (iTunes Search API, approximate)")
@@ -315,15 +407,23 @@ def main():
         row = conn.execute("SELECT page1_reviews, latest_review_date FROM review_probe WHERE run_date=? AND country=? AND app_id=?",
                            (today, cc, app_id)).fetchone()
         if row:
-            lines.append(f"- {label} ({cc}): {row[0]} reviews on page 1, latest {row[1] or 'n/a'}")
+            if row[0] is None:
+                lines.append(f"- {label} ({cc}): probe failed (feed returned nothing — not a zero)")
+            else:
+                lines.append(f"- {label} ({cc}): {row[0]} reviews on page 1, latest {row[1] or 'n/a'}")
     lines.append("")
-    lines.append("Note: rating-count delta and rank movement are velocity proxies, not download/revenue numbers. "
+    lines.append("Notes: rating-count delta and rank movement are velocity proxies, not download/revenue numbers. "
+                 "Negative delta usually means the rating count reset with a new version, not negative sales. "
+                 "Deltas under ~5/day on apps with <1,000 ratings are marked (noise) — do not read into them. "
+                 "Cross-app delta comparison is indicative only (rating-prompt intensity differs by category). "
                  "No panel data = no fabricated estimates.")
     report_path = os.path.join(args.report_dir, f"report-{today}.md")
     with open(report_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
     print(json.dumps({"date": today, "prev": prev, "counts": counts,
                       "failures": FAILURES, "report": report_path}, ensure_ascii=False, indent=1))
+    if FAILURES:
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

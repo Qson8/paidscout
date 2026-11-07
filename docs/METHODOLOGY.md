@@ -30,7 +30,7 @@ differences are in the estimation layer on top:
 | Rank history & diffs | ✔ | ✔ (SQLite, per-run) |
 | Rating-count velocity | internal signal | ✔ reported as the raw delta |
 | Keyword positions | ✔ | ✔ for a watchlist (Search API, approximate) |
-| Review velocity | ✔ | ✔ page-1 probe for watchlist apps |
+| Review velocity | ✔ | △ page-1 probe for watchlist apps — Apple's reviews feed intermittently returns empty for some apps/storefronts; failures are stored as NULL (never as zero) and page-1 counts saturate at 50, so treat this as a weak signal |
 | Download estimates | model + panel | ✘ — reports velocity proxies instead |
 | Revenue estimates | model + panel | ✘ — long-tail revenue models are demonstrably broken (see below) |
 
