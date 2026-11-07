@@ -1,3 +1,5 @@
+![PaidScout — App Store Paid & Offline App Research Engine](assets/poster.svg)
+
 # PaidScout
 
 **English** | [简体中文](README.zh-CN.md)

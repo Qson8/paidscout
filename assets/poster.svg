@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#0A1128"/><stop offset="0.55" stop-color="#0E1E3D"/><stop offset="1" stop-color="#14315E"/>
+</linearGradient>
+<linearGradient id="sweep" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#F5A524" stop-opacity="0.30"/><stop offset="1" stop-color="#F5A524" stop-opacity="0"/>
+</linearGradient>
+</defs>
+<rect width="1280" height="720" fill="url(#bg)"/>
+<line x1="0" y1="0" x2="0" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="64" y1="0" x2="64" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="128" y1="0" x2="128" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="192" y1="0" x2="192" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="256" y1="0" x2="256" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="320" y1="0" x2="320" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="384" y1="0" x2="384" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="448" y1="0" x2="448" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="512" y1="0" x2="512" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="576" y1="0" x2="576" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="640" y1="0" x2="640" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="704" y1="0" x2="704" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="768" y1="0" x2="768" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="832" y1="0" x2="832" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="896" y1="0" x2="896" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="960" y1="0" x2="960" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="1024" y1="0" x2="1024" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="1088" y1="0" x2="1088" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="1152" y1="0" x2="1152" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="1216" y1="0" x2="1216" y2="720" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="0" y1="0" x2="1280" y2="0" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="0" y1="64" x2="1280" y2="64" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="0" y1="128" x2="1280" y2="128" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="0" y1="192" x2="1280" y2="192" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="0" y1="256" x2="1280" y2="256" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="0" y1="320" x2="1280" y2="320" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="0" y1="384" x2="1280" y2="384" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="0" y1="448" x2="1280" y2="448" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="0" y1="512" x2="1280" y2="512" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="0" y1="576" x2="1280" y2="576" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="0" y1="640" x2="1280" y2="640" stroke="#FFFFFF" stroke-opacity="0.04"/>
+<line x1="0" y1="704" x2="1280" y2="704" stroke="#FFFFFF" stroke-opacity="0.04"/>
+
+<circle cx="1055" cy="330" r="265" fill="none" stroke="#2DD4BF" stroke-opacity="0.20" stroke-width="1.5"/>
+<circle cx="1055" cy="330" r="195" fill="none" stroke="#2DD4BF" stroke-opacity="0.28" stroke-width="1.5"/>
+<circle cx="1055" cy="330" r="125" fill="none" stroke="#2DD4BF" stroke-opacity="0.36" stroke-width="1.5"/>
+<path d="M1055 330 L1055 65 A265 265 0 0 1 1243 142 Z" fill="url(#sweep)"/>
+<circle cx="860" cy="210" r="5" fill="#F5A524" opacity="0.9"/>
+<circle cx="990" cy="150" r="4" fill="#2DD4BF" opacity="0.9"/>
+<circle cx="1120" cy="205" r="5" fill="#F5A524" opacity="0.9"/>
+<circle cx="1200" cy="120" r="4" fill="#FFFFFF" opacity="0.9"/>
+<circle cx="930" cy="300" r="3" fill="#FFFFFF" opacity="0.9"/>
+
+<rect x="905" y="470" width="46" height="120" rx="8" fill="#2DD4BF" opacity="0.45"/>
+<rect x="975" y="430" width="46" height="160" rx="8" fill="#2DD4BF" opacity="0.58"/>
+<rect x="1045" y="385" width="46" height="205" rx="8" fill="#2DD4BF" opacity="0.71"/>
+<rect x="1115" y="330" width="46" height="260" rx="8" fill="#2DD4BF" opacity="0.84"/>
+<rect x="1185" y="265" width="46" height="325" rx="8" fill="#F5A524" opacity="0.97"/>
+
+<polyline points="928,450 998,408 1068,362 1138,305 1208,240" fill="none" stroke="#F5A524" stroke-width="4" stroke-linecap="round"/>
+<g font-family="Arial,Helvetica,sans-serif">
+<text x="70" y="96" font-size="17" letter-spacing="4" fill="#2DD4BF">FOR INDIE DEVELOPERS</text>
+<text x="66" y="212" font-size="104" font-weight="bold" fill="#FFFFFF">Paid<tspan fill="#F5A524">Scout</tspan></text>
+<text x="70" y="272" font-size="31" fill="#E8F1FF">App Store Paid &amp; Offline App Research Engine</text>
+<text x="70" y="318" font-size="24" fill="#9DB8D9">给独立开发者的付费离线应用调研引擎</text>
+<text x="70" y="392" font-size="21" fill="#C7D8F2">Watch the paid charts daily. Track rating velocity, rank moves</text>
+<text x="70" y="424" font-size="21" fill="#C7D8F2">and keyword positions — and never trust an “estimate” again.</text>
+<text x="70" y="470" font-size="21" fill="#C7D8F2">每天盯付费榜，看名次、评分量增速与关键词，不编造下载和收入。</text>
+</g>
+<g><rect x="70" y="512" width="183" height="38" rx="19" fill="#FFFFFF" fill-opacity="0.06" stroke="#2DD4BF" stroke-opacity="0.5"/><text x="84" y="537" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="1.5" fill="#CFE8FF">DUAL-SOURCE CHARTS</text></g>
+<g><rect x="262" y="512" width="157" height="38" rx="19" fill="#FFFFFF" fill-opacity="0.06" stroke="#2DD4BF" stroke-opacity="0.5"/><text x="276" y="537" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="1.5" fill="#CFE8FF">RATING VELOCITY</text></g>
+<g><rect x="438" y="512" width="140" height="38" rx="19" fill="#FFFFFF" fill-opacity="0.06" stroke="#2DD4BF" stroke-opacity="0.5"/><text x="452" y="537" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="1.5" fill="#CFE8FF">KEYWORD RANKS</text></g>
+<g><rect x="592" y="512" width="226" height="38" rx="19" fill="#FFFFFF" fill-opacity="0.06" stroke="#2DD4BF" stroke-opacity="0.5"/><text x="606" y="537" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="1.5" fill="#CFE8FF">NO FABRICATED ESTIMATES</text></g>
+
+<g font-family="Arial,Helvetica,sans-serif">
+<rect x="70" y="600" width="34" height="3" fill="#F5A524"/>
+<text x="70" y="646" font-size="18" fill="#7E97BC">Zero dependencies · Python stdlib · MIT License</text>
+<text x="1210" y="646" font-size="18" fill="#7E97BC" text-anchor="end">Built by an indie developer, for indie developers</text>
+</g>
+</svg>
