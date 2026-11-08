@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.3.0 — 2026-11-08
+
+- **PainScout: demand-side weekly module (`painscout.py`).** Mines 1–3 star
+  App Store reviews (RSS, US/CN) for recurring pain clusters and scores them
+  into demand cards that feed the same candidate pool as chart candidates.
+  Automated sources are exactly two — App Store review RSS and the official
+  HN Algolia API; Reddit and Google Play are never automated.
+- Bilingual (EN/中文） pain taxonomy v1 (8 classes) with a keyword grammar
+  harvested from real review phrasing; workaround and paid language weighted
+  above raw anger, pure price rage / feature wishes downweighted as noise.
+- Cold-start 6-point scoring (frequency / intensity / unmet need), ≥4 → card;
+  persistence and cross-source resonance stay off until 4 weekly snapshots
+  exist. Outputs: weekly report, cumulative card pool, JSON snapshot.
+- Honesty mechanics: empty review feeds are logged as fetch failures
+  (NULL ≠ zero reviews), quotes are de-identified and stripped from the
+  public edition (`examples/sample-painscout-weekly-2026-11-08.md`).
+- First run (2026-11-08): meditation 300 fetched / 148 kept → 1 card
+  (AI aversion, 4/6 — matches the manual section-0 deep-read card-for-card);
+  kids drawing 100/61 → credit-wall cluster in the observation zone; the
+  debt category was unmeasurable this week (all three seed apps' review
+  feeds returned empty shells — reported as failures, not zeros).
+
 ## 0.2.4 — 2026-11-08
 
 Closes the freemium blind spot and adds the time dimension:

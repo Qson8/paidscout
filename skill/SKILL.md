@@ -132,3 +132,36 @@ indicative, because rating-prompt intensity differs.
 - Direction section: candidates ranked by score, each with its
   differentiation angle and main risk; state which enter / stay / leave the
   pool.
+
+## PainScout (demand-side weekly, painscout.py)
+
+PaidScout reads charts (*what sells*); PainScout reads 1–3 star App Store
+reviews (*what users curse*) and turns recurring complaints into demand cards
+that enter the same candidate pool.
+
+- **When to run:** weekly (Mondays). `python3 painscout.py` with the seed (or
+  your own) `painscout.config.json`. It writes a weekly report, appends to the
+  cumulative card pool (`reports/painscout-cards.md`), and saves a JSON
+  snapshot under `data/`.
+- **Automated sources — only these two:** App Store review RSS (US/CN
+  storefronts) and the official HN Algolia API. Reddit, Google Play and
+  anything needing a login are **never** automated: reading them is T3 manual
+  work, never fed into the engine, never sent to an LLM in bulk. V2EX has no
+  login-free keyword search endpoint and is likewise T3 manual.
+- **Reading the scores:** cold-start 6-point scale — frequency / intensity
+  (workaround & paid-language inside the cluster) / unmet (cross-app spread +
+  unresolved markers), each 0–2; **≥4 generates a card**. Evidence strength
+  (concrete vs. noise) is printed on the card but not scored; asset fit is a
+  human checkbox, not a score. Persistence and cross-source resonance stay
+  **off** until 4 weekly snapshots exist. The engine systematically scores
+  lower than a human deep-read — treat it as a weekly monitor and tripwire,
+  not a replacement for interviews or paid tests.
+- **Noise rule:** pure price rage and pure feature wishes are downweighted as
+  noise; workaround language ("I use a spreadsheet instead") and paid language
+  count at full weight — willingness-to-pay evidence outranks anger volume.
+- **Honesty rules:** an empty review feed is a fetch failure (NULL ≠ zero
+  reviews) and is reported as such, never as "no complaints". Quotes on cards
+  are de-identified (authors are never parsed; links/emails scrubbed) and the
+  public edition strips quotes entirely. Never describe the pipeline as
+  "fully automated multi-source" — the automated sources are exactly the two
+  above.

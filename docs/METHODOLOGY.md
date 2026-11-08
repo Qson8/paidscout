@@ -81,3 +81,36 @@ third-party estimates as a cross-reference, never as ground truth.
   grossing' counts distinct days present within the last 90. A (12d)
   figure is a 12-day figure; nothing is extrapolated into a fake 90-day
   history.
+
+## Pain mining (PainScout, v0.3.0): how demand cards are produced
+
+The charts above are supply-side evidence. PainScout adds the demand side:
+what users of existing apps repeatedly curse, counted from their own words.
+
+- **Corpus.** 1–3 star reviews from the App Store review RSS (US/CN
+  storefronts) for a seed set of apps, plus HN Algolia hits as corroboration
+  only. Author fields are never parsed. Reddit, Google Play and any
+  login-walled source are never automated — manual reading only.
+- **Taxonomy v1 (bilingual keyword grammar).** Eight pain classes: opaque
+  subscription/billing, data & trust failures, rigid plan/data editing,
+  content gaps, AI aversion, credit walls & expiring balances, unexplained
+  generation/review failures, forced onboarding flows. Substring matching is a
+  counting instrument, not comprehension — cards must be re-read by a human
+  (the Skill layer) before any decision.
+- **Signal weighting.** Workaround language ("I went back to a spreadsheet")
+  and paid language ("I paid for points that expired") count at full weight —
+  they evidence willingness to pay. Pure price rage and pure feature wishes
+  are logged as noise and excluded from counts.
+- **Cold-start score (6 points).** Frequency (cluster size) 0–2, intensity
+  (workaround + paid language inside the cluster) 0–2, unmet need (cross-app
+  spread + unresolved markers) 0–2. **≥4 → demand card.** Persistence and
+  cross-source resonance are not scored until four weekly snapshots exist.
+  Evidence strength (concrete vs. noise share) is printed on the card, not
+  scored; asset fit is a human checkbox — the engine never decides strategy.
+- **Known limits.** Apple's review RSS intermittently returns empty shells
+  for some apps/storefronts; an empty feed is logged as a fetch failure,
+  never as zero complaints (a whole category can be unmeasurable in a given
+  week — that is reported, not smoothed over). The "most recent" window is a
+  snapshot, not the review corpus; low-star reviewers are a self-selected
+  sample. A demand card is an interview and paid-test entry point, never a
+  build decision by itself.

@@ -51,6 +51,9 @@ subscription, no scraped login-walled data.**
 - **First-pass filters** — offline/single-device heuristics from store copy,
   and a big-company flag, so solo-dev-replicable apps stand out from
   Mojang/Warner/Tencent-scale hits. Heuristics are labelled as such.
+- **PainScout (new in v0.3.0)** — a demand-side weekly module: it mines 1–3 star
+  App Store reviews for recurring pain clusters and scores them into demand
+  cards that feed the same candidate pool (see the PainScout section below).
 - **Zero dependencies** — one Python file, standard library only.
 
 ## Quickstart
@@ -123,12 +126,40 @@ PaidScout is the data layer. The workflow it was built for:
    purity, overseas fit, paid-validation strength, and fit with your stack.
 3. Keep a candidate pool; drop directions that leave the charts or stall.
 
+## PainScout — the demand side (weekly)
+
+`paidscout.py` answers *what sells*. `painscout.py` answers *what users curse*:
+it pulls 1–3 star reviews for a seed set of apps, classifies them against a
+bilingual (EN/中文） pain taxonomy (opaque subscriptions, data & trust failures,
+rigid plan editing, content gaps, AI aversion, credit walls, unexplained
+generation failures, forced onboarding flows), weights workaround language
+("I track it in a spreadsheet instead") and paid language above raw anger, and
+scores each cluster on a cold-start 6-point scale (frequency / intensity /
+unmet need). Clusters scoring ≥4 become **demand cards** in a cumulative pool —
+each with a falsification condition — ready for the same interview/paid-test
+discipline as chart candidates.
+
+```bash
+cp painscout.config.example.json painscout.config.json   # or use the built-in seed set
+python3 painscout.py                  # weekly run
+python3 painscout.py --dry-run        # console summary only
+```
+
+- **Automated sources are exactly two:** App Store review RSS (US/CN) and the
+  official HN Algolia API. Reddit and Google Play are **never** automated —
+  they are manual-reading territory only.
+- An empty review feed is reported as a fetch failure, never as "zero
+  complaints" — Apple's RSS intermittently returns empty shells for some apps.
+- Review quotes are de-identified (authors are never parsed) and stripped from
+  the public weekly edition: [sample weekly report](examples/sample-painscout-weekly-2026-11-08.md).
+
 ## Roadmap
 
 - **First, validation** — four weeks of daily runs, then a published review of whether rating velocity actually separates real movers from chart noise. This gates everything below.
 - Per-app detail pages (IAP list, description diffing between versions)
 - Sparkline-style rank history export (CSV)
 - Review probe: maintenance mode (failures are stored as NULL since 0.2.0; page-1 counts saturate at 50 for hot apps — a structural limit of the free feed)
+- PainScout: persistence + cross-source resonance scoring once 4+ weekly snapshots exist
 
 PaidScout runs daily in production for its author's own research. If it
 helps you, a star helps it get found.
